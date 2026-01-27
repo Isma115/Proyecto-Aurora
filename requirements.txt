@@ -1,0 +1,16 @@
+# Dependencias del Chatbot Gemma 2B
+
+# Biblioteca para ejecutar modelos GGUF localmente
+llama-cpp-python
+
+# Nota: tkinter viene incluido con Python, no necesita instalación separada
+
+# Dependencias para Investigación Web
+ddgs
+beautifulsoup4
+requests
+
+# Servidor API y WebSockets
+flask
+flask-socketio
+eventlet

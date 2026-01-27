@@ -1,0 +1,18 @@
+{
+  "id": "b48f978c-1e1c-429b-8ac9-a8235c57f3d9",
+  "title": "Conversación 25/01/2026 04:21",
+  "created_at": "2026-01-25T04:21:34.588806",
+  "updated_at": "2026-01-25T16:05:07.902150",
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Sí, me suena. Vince Gilligan es un creador muy talentoso, así que me intriga saber más sobre \"Pluribus\".  😄  ¿Podrías contarme un poco más sobre la serie? Me interesa saber qué tipo de trama tiene, ¿es similar a lo que hace Vince Gilligan?",
+      "timestamp": "2026-01-25T04:23:14.798305"
+    },
+    {
+      "role": "assistant",
+      "content": "¿Qué tal? Todo bien, y tú? 😄",
+      "timestamp": "2026-01-25T16:05:07.902150"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "ca3b21c7-4569-4af2-8de2-46e02a0d0072",
+  "title": "Conversación 10/01/2026 21:01",
+  "created_at": "2026-01-10T21:01:58.453854",
+  "updated_at": "2026-01-11T02:41:15.958118",
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "En Galicia hay un montón de cosas que me gustan.  La comida, por ejemplo, es increíble.  Y la gente es muy acogedora.  Me gusta mucho pasear por las playas, especialmente en verano.  Es un lugar tranquilo y relajante.",
+      "timestamp": "2026-01-10T21:02:33.392282"
+    },
+    {
+      "role": "assistant",
+      "content": "En mi casa, hablamos gallego, es como un idioma familiar.  Pero en la ciudad, claro, se habla más castellano.  Es un poco complicado, pero es normal.  En fin, es un lugar con una mezcla de culturas.  \n \n¿Te gustaría saber algo más sobre Galicia?",
+      "timestamp": "2026-01-10T21:04:22.785586"
+    },
+    {
+      "role": "assistant",
+      "content": "Es verdad, me gusta mucho cocinar.  Siempre estoy probando nuevas recetas, especialmente de mi abuela.  Me gusta hacer platos típicos de Galicia.  \n \n¿Y tú? ¿Qué te gusta hacer en tu tiempo libre?",
+      "timestamp": "2026-01-10T21:06:02.170099"
+    },
+    {
+      "role": "assistant",
+      "content": "Pues, la verdad es que me gusta leer sobre filosofía, y ahora estoy empezando un libro sobre la ética.  No es un libro fácil, pero me parece interesante.  \n\n¿Qué libro has leído últimamente?",
+      "timestamp": "2026-01-11T02:39:47.988323"
+    },
+    {
+      "role": "assistant",
+      "content": "¡Es un libro que engancha de primeras!  El mundo de Berserk es realmente complejo y fascinante, con una historia que se desarrolla de forma muy intensa.  El personaje de Guts es brutalmente poderoso, pero también vulnerable, y eso lo hace tan interesante.  \n \nLa filosofía me gusta porque me hace pensar, pero también me gusta cuando se explica de forma clara y concisa, sin que se pierda la esencia.  Es como una buena película: te deja pensando, pero también te da una sensación de satisfacción al final.   \n\n\n¿Y tú, qué tipo de filosofía te gusta?",
+      "timestamp": "2026-01-11T02:41:15.958118"
+    }
+  ]
+}

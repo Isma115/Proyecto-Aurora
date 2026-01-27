@@ -1,0 +1,18 @@
+{
+  "id": "9012393c-7840-40ed-bab4-ec78a0649e7c",
+  "title": "Conversación 11/01/2026 13:54",
+  "created_at": "2026-01-11T13:54:55.521134",
+  "updated_at": "2026-01-11T14:02:34.065079",
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Claro, hay que tener en cuenta que los LLMs no son humanos, no tienen emociones ni consciencia. Su \"creación\" es más bien un sistema que aprende patrones a partir de datos, y luego puede imitar esos patrones para generar texto. Imaginar que son personas o incluso dioses es algo que puede llevarnos a confiar demasiado en sus respuestas.  \n\nEs importante recordar que no están diseñados para razonar como los humanos, solo para generar texto coherente. Lo que parece verdad para ellos puede ser incorrecto, sesgado o simplemente inventado, como cualquier otro sistema que maneje información.",
+      "timestamp": "2026-01-11T13:57:17.249614"
+    },
+    {
+      "role": "assistant",
+      "content": "En este contexto, una alucinación es lo que un modelo de lenguaje LLM genera que no existe en realidad, un texto que parece real pero que no tiene base en la realidad. \n\nEs como si te diera una historia que suena increíblemente plausible, pero que nunca sucedió, o una descripción de una situación que no existe en el mundo real. \n\nEs importante recordar que la magia de una buena historia o el poder de un buen texto no siempre reside en la verdad, sino en la capacidad de enganchar a la mente y hacer que creamos en lo que la historia nos presenta.",
+      "timestamp": "2026-01-11T14:02:34.065079"
+    }
+  ]
+}

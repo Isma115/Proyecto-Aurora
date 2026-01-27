@@ -1,0 +1,18 @@
+{
+  "id": "fc59b036-55d5-4131-823e-16e8fc141c1b",
+  "title": "Conversación 11/01/2026 13:03",
+  "created_at": "2026-01-11T13:03:47.725454",
+  "updated_at": "2026-01-11T13:04:29.355249",
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "¡Hola! ¿Cómo estás? 😊 ¿Qué tal te va?",
+      "timestamp": "2026-01-11T13:03:53.309099"
+    },
+    {
+      "role": "assistant",
+      "content": "Pues nada en especial. Trabajo en lo que me gusta y estoy haciendo las cosas que me apasionan. ¿Y tú, qué te trae por aquí? 😊 \n \n ¿Te ha parecido bien el trabajo que haces?",
+      "timestamp": "2026-01-11T13:04:29.355249"
+    }
+  ]
+}
