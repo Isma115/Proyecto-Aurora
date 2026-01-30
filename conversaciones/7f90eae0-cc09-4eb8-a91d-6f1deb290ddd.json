@@ -1,0 +1,38 @@
+{
+  "id": "7f90eae0-cc09-4eb8-a91d-6f1deb290ddd",
+  "title": "Holaa como te va...",
+  "created_at": "2026-01-28T21:34:43.575301",
+  "updated_at": "2026-01-28T21:41:33.153016",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Holaa como te va",
+      "timestamp": "2026-01-28T21:38:10.461998"
+    },
+    {
+      "role": "assistant",
+      "content": "Hola!  Todo bien, gracias. ¿Y tú? 😄",
+      "timestamp": "2026-01-28T21:38:14.073891"
+    },
+    {
+      "role": "user",
+      "content": "Bieen",
+      "timestamp": "2026-01-28T21:38:54.712611"
+    },
+    {
+      "role": "assistant",
+      "content": "Genial!  😁  ¿Qué onda?",
+      "timestamp": "2026-01-28T21:38:57.735850"
+    },
+    {
+      "role": "user",
+      "content": "Geniaaal,  oye que has estado haciendo ultimamente?",
+      "timestamp": "2026-01-28T21:41:27.917506"
+    },
+    {
+      "role": "assistant",
+      "content": "He estado un poco ocupada, pero en general, nada demasiado emocionante.  ¿Y tú? ¿Qué has estado haciendo? 😜",
+      "timestamp": "2026-01-28T21:41:33.153016"
+    }
+  ]
+}

@@ -26,16 +26,26 @@ class ChatEngine:
         self.llm.set_temperature(self.settings.get("temperature"))
         self.llm.model_type = self.settings.get("model_type")
         
-        # Iniciar nueva conversación
-        self.conversation_manager.create_conversation()
-        
-        # Limpiar memorias inválidas al inicio
-        self.memory.cleanup_memories()
-        
+        # Inicializar variables de estado
         self.conversation_history = []
         self.message_count = 0
         self.on_status_change = on_status_change
         self._initialized = False
+        
+        # Cargar última conversación si existe, sino crear una nueva
+        last_id = self.settings.get("last_conversation_id")
+        if last_id:
+            print(f"[DEBUG] Intentando cargar última conversación: {last_id}")
+            if not self.load_conversation(last_id):
+                print("[DEBUG] No se pudo cargar la última conversación, creando una nueva.")
+                self.conversation_manager.create_conversation()
+                self.settings.update("last_conversation_id", self.conversation_manager.current_conversation_id)
+        else:
+            self.conversation_manager.create_conversation()
+            self.settings.update("last_conversation_id", self.conversation_manager.current_conversation_id)
+        
+        # Limpiar memorias inválidas al inicio
+        self.memory.cleanup_memories()
     
     def update_status(self, status):
         """Actualiza el estado si hay callback"""
@@ -174,6 +184,8 @@ class ChatEngine:
         self.conversation_history = []
         self.message_count = 0
         self.conversation_manager.create_conversation()
+        # Guardar como última conversación
+        self.settings.update("last_conversation_id", self.conversation_manager.current_conversation_id)
     
     def new_conversation(self):
         """Alias para clear_conversation + create_conversation explícito"""
@@ -189,10 +201,14 @@ class ChatEngine:
                 if "role" in msg and "content" in msg:
                     self.conversation_history.append({
                         "role": msg["role"],
-                        "content": msg["content"]
+                        "content": msg["content"],
+                        "timestamp": msg.get("timestamp")
                     })
             
             self.message_count = len([m for m in self.conversation_history if m["role"] == "user"])
+            
+            # Guardar como última conversación
+            self.settings.update("last_conversation_id", conversation_id)
             return True
         return False
         
