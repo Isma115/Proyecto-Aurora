@@ -763,11 +763,16 @@ class ChatWindow(tk.Tk):
         self.history_tab = tk.Frame(self.notebook, bg=ModernStyle.BG_PRIMARY)
         self.notebook.add(self.history_tab, text='🗂️ Historial')
         
+        # Pestaña 5: Estadísticas (Nueva)
+        self.stats_tab = tk.Frame(self.notebook, bg=ModernStyle.BG_PRIMARY)
+        self.notebook.add(self.stats_tab, text='📊 Estadísticas')
+        
         # Crear contenido de cada pestaña
         self.create_chat_area()
         self.apuntes_panel = ApuntesPanel(self.apuntes_tab) # Inicializar panel de apuntes
         self.create_rag_panel()
         self.create_history_panel()
+        self.create_statistics_panel()
     
     def create_chat_area(self):
         """Crea el área de chat con scroll"""
@@ -1046,6 +1051,66 @@ class ChatWindow(tk.Tk):
         # Bind cambio de pestaña para refrescar
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
 
+    def create_statistics_panel(self):
+        """Crea el panel de estadísticas"""
+        # Contenedor principal
+        container = tk.Frame(self.stats_tab, bg=ModernStyle.BG_PRIMARY)
+        container.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # Header
+        header_label = tk.Label(
+            container,
+            text="📊 Estadísticas de Uso",
+            bg=ModernStyle.BG_PRIMARY,
+            fg=ModernStyle.TEXT_PRIMARY,
+            font=(ModernStyle.FONT_FAMILY, ModernStyle.FONT_SIZE_LARGE, "bold")
+        )
+        header_label.pack(anchor=tk.W, pady=(0, 20))
+        
+        # Grid para tarjetas de estadísticas
+        stats_grid = tk.Frame(container, bg=ModernStyle.BG_PRIMARY)
+        stats_grid.pack(fill=tk.X)
+        
+        # Tarjeta 1: Mensajes Totales
+        card_frame = tk.Frame(
+            stats_grid,
+            bg=ModernStyle.BG_SECONDARY,
+            padx=20,
+            pady=20
+        )
+        card_frame.pack(side=tk.LEFT, padx=10, fill=tk.Y)
+        
+        # Borde decorativo
+        card_frame.configure(highlightbackground=ModernStyle.ACCENT_PRIMARY, highlightthickness=1)
+        
+        # Icono/Título
+        tk.Label(
+            card_frame,
+            text="💬 Mensajes Totales",
+            bg=ModernStyle.BG_SECONDARY,
+            fg=ModernStyle.TEXT_SECONDARY,
+            font=(ModernStyle.FONT_FAMILY, ModernStyle.FONT_SIZE_NORMAL)
+        ).pack(anchor=tk.W)
+        
+        # Valor Grande
+        self.total_messages_label = tk.Label(
+            card_frame,
+            text="0",
+            bg=ModernStyle.BG_SECONDARY,
+            fg=ModernStyle.ACCENT_PRIMARY,
+            font=(ModernStyle.FONT_FAMILY, 36, "bold")
+        )
+        self.total_messages_label.pack(anchor=tk.W, pady=(5, 0))
+        
+        # Subtítulo
+        tk.Label(
+            card_frame,
+            text="Enviados por ti a Aurora",
+            bg=ModernStyle.BG_SECONDARY,
+            fg=ModernStyle.TEXT_MUTED,
+            font=(ModernStyle.FONT_FAMILY, ModernStyle.FONT_SIZE_SMALL)
+        ).pack(anchor=tk.W)
+
     def on_tab_changed(self, event):
         """Manejador de cambio de pestaña"""
         current_tab = self.notebook.select()
@@ -1053,6 +1118,13 @@ class ChatWindow(tk.Tk):
         
         if "Historial" in tab_text:
             self.refresh_history_list()
+        elif "Estadísticas" in tab_text:
+            self.update_statistics_ui()
+
+    def update_statistics_ui(self):
+        """Actualiza la interfaz de estadísticas"""
+        total = self.chat_engine.stats_manager.get_total_user_messages()
+        self.total_messages_label.configure(text=str(total))
 
     def refresh_history_list(self):
         """Refresca la lista de conversaciones"""
@@ -1698,6 +1770,8 @@ class ChatWindow(tk.Tk):
         options_menu.add_command(label="Empezar conversación", command=self.start_conversation_flow)
         options_menu.add_separator()
         options_menu.add_command(label="Investigar tema...", command=self.start_research_flow)
+        options_menu.add_separator()
+        options_menu.add_command(label="Simular respuesta de usuario", command=self.simulate_user_response)
 
     def start_conversation_flow(self):
         """Inicia el flujo donde Aurora habla primero"""
@@ -1809,6 +1883,86 @@ class ChatWindow(tk.Tk):
         except Exception as e:
             self.after(0, lambda: self.show_error(f"Error crítico en investigación: {str(e)}"))
             self.after(0, lambda: self.status_bar.set_status("Error crítico"))
+
+    def simulate_user_response(self):
+        """Simula una respuesta del usuario usando el LLM"""
+        if not self._initialized: return
+        
+        # Feedback visual
+        self.status_bar.set_status("Pensando como usuario...")
+        self.input_text.delete("1.0", tk.END)
+        self.input_text.configure(fg=ModernStyle.TEXT_PRIMARY)
+        
+        # Deshabilitar UI
+        self.input_text.configure(state=tk.DISABLED)
+        self.send_button.configure(state=tk.DISABLED)
+        
+        # Thread para generación
+        thread = threading.Thread(target=self.process_user_simulation)
+        thread.daemon = True
+        thread.start()
+
+    def process_user_simulation(self):
+        """Genera la respuesta simulada del usuario"""
+        try:
+            # Construir prompt para simular usuario
+            # Usamos el historial reciente para contexto
+            history_context = ""
+            recent_msgs = self.chat_engine.conversation_history[-5:] # Últimos 5 mensajes
+            
+            for msg in recent_msgs:
+                role = "Tú" if msg['role'] == 'user' else "Aurora"
+                history_context += f"{role}: {msg['content']}\n"
+            
+            system_prompt = (
+                "Eres el usuario charlando con Aurora. "
+                "Tu objetivo es continuar la conversación de forma natural, breve y casual. "
+                "Responde directamente a lo último que dijo Aurora. "
+                "No uses prefijos como 'Usuario:' ni guiones. Sé espontáneo."
+            )
+            
+            full_prompt = f"Conversación reciente:\n{history_context}\n\nInstrucción: {system_prompt}\n\nTu respuesta:"
+            
+            # Función para actualizar el input con streaming
+            def on_token(token):
+                self.after(0, lambda t=token: self.append_input_token(t))
+            
+            # Usar generate_stream del cliente LLM directamente (bypass chat engine standard flow)
+            # Usamos un truco: llamar a generate_stream del llm con un prompt custom
+            # Nota: Esto usa el modelo cargado actualmente
+            
+            self.chat_engine.llm.generate_stream(
+                prompt=full_prompt, 
+                context="", 
+                system_prompt=system_prompt,
+                callback=on_token
+            )
+            
+            # Al finalizar, enviar mensaje
+            self.after(0, self.finish_simulation_and_send)
+            
+        except Exception as e:
+            self.after(0, lambda: self.show_error(f"Error simulando usuario: {str(e)}"))
+            self.after(0, self.enable_input)
+
+    def append_input_token(self, token):
+        """Añade token al input text"""
+        self.input_text.configure(state=tk.NORMAL)
+        self.input_text.insert(tk.END, token)
+        self.input_text.see(tk.END)
+        self.input_text.configure(state=tk.DISABLED)
+
+    def finish_simulation_and_send(self):
+        """Finaliza la simulación y envía el mensaje"""
+        self.input_text.configure(state=tk.NORMAL)
+        # Pequeña pausa para que se vea el texto final antes de enviar
+        self.after(500, self.send_message)
+            
+    def enable_input(self):
+        """Rehabilita el input en caso de error"""
+        self.input_text.configure(state=tk.NORMAL)
+        self.send_button.configure(state=tk.NORMAL)
+        self.status_bar.set_status("Listo")
 
 class ApuntesPanel:
     """Panel de edición de apuntes con resaltado Markdown en tiempo real (WYSIWYG-ish)"""

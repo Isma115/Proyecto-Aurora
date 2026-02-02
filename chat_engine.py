@@ -10,6 +10,7 @@ from memory_manager import MemoryManager
 from conversation_manager import ConversationManager
 from config import SUMMARY_INTERVAL, SIMILARITY_THRESHOLD
 from settings_manager import SettingsManager
+from statistics_manager import StatisticsManager
 
 
 class ChatEngine:
@@ -17,6 +18,7 @@ class ChatEngine:
     
     def __init__(self, on_status_change=None):
         self.settings = SettingsManager()
+        self.stats_manager = StatisticsManager()
         self.llm = LocalLLMClient()
         self.rag = RAGEngine()
         self.memory = MemoryManager()
@@ -92,6 +94,9 @@ class ChatEngine:
             print("[DEBUG] Mensaje usuario guardado en JSON")
         except Exception as e:
             print(f"[ERROR] Falló guardado de mensaje usuario: {e}")
+            
+        # Incrementar contador de estadísticas
+        self.stats_manager.increment_user_messages()
         
         # Actualizar estado
         self.update_status("Recordando...")
