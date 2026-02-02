@@ -18,8 +18,34 @@ Esta opción pues ya la conociamos, pero vale la pena volver a recordarla. ¿Por
 
 ¿Estoy intentando cambiarme, o estoy "mejorando"? Me va a servir de algo esto?
 
+
+Me he dado cuenta de que alguna actitud que pueda cuajar conmigo, algo como una actitud sarcástica, agradable y "graciosa" de alguna manera, el tío que parece que se la suda todo, bueno no tan así, pero alguien que enfrenta la vida con confianza genuina, y que habla sin preocupación por la opinión ajena. Al menos ahora mismo podemos dar esa sensación, pero está muy lejos de convertirse en algo genuino más cuando estamos empezando con esto más en serio.
+
 Chati está intentando ayudarme, pero aún siendo una IA dedicada a las conversaciones, flojea brutalmente en tema social, vale no es humana, pero todo el conocimiento de la humanidad de que le sirve entones?
+Vale, pues siguiente misión: Conseguir que chati sirva para algo
+
+Voy a intentar hacer un proceso iterativo en el que construyo un promp que cubra todo lo que necesito para conseguir la información más acertada
+
+Quizás con pasos metódicos pueda sacar algo
+
+[COMO INICIAR UNA CONVERSACIÓN CUANDO NO HAY NADA QUE HABLAR]
+
+Cuando se supone que no hay nada que transmitir ni comunicar en ese momento, pues resulta que si hay que decir algo por que si no pues hay un momento extraño, pues tengamos la opción de poder hacer algo al respecto. El objetivo más a largo plazo pues sería que fueramos capaces de hacer esto cada dos por tres fácilmente y en cualquier situación. Vamos a dejar una cosa clara, soy introvertido, no voy a intentar empezar una conversación con gente con menos confianza en un grupo muy grande con todos a la vez, si es verdad que se forman a veces subgrupos dentro de otros, en los que uno empieza a hablar y ya da juego para unos minutos, y te quedas alojado en esa conversación hasta que ya haya silencio y quieras aportar tu algo, pero eso, grupo de máximo 5 personas incluso, e intentando que no suene raro.
 
 
+1. Observación del entorno (complicado que haya algo interesante ocurriendo)
+    la opción más obvia de todas
+
+1. Rebuscar rápidamente información sobre la otra persona para preguntar o hacer referencia sobre esta, claro que con nuestra memoria complicado
+
+1. Observar aspecto físico o estado de ánimo, podría ocurrir que haya algo diferente en esa persona ese día, vale la pena intentar por ahí sacarle información
+
+1. Compartir algo gracioso, ridículo o alguna cagada que hayas hecho recientemente, una anécdota en general, claro que como empiezas, más adelante veré como se podrían hacer entradas para estos casos.
+
+1. Observa la línea temporal, se acerca navidad? carnaval? vacaciones cercanas?, que puede ocurrir en un tiempo?, Comentalo
+
+1. Algo interesante habrás hecho en el día o la semana, te han jodido bien en el trabajo? estás haciendo algún proyecto? empieza por como te sientes por ello, cansado, exhausto, feliz, y comentalo, no pasa nada si te repites, comentalo otra vez otro día, nadie es tan analítico como nosotros como para darse cuenta de que sigues un patrón conversacional.
+
+1. 
 
 
