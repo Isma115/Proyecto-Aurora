@@ -424,6 +424,11 @@ class ChatWindow(tk.Tk):
         self.chat_engine.on_status_change = self.update_status
         self._initialized = False
         
+        # Cola de acciones para el streaming con delay
+        self.action_queue = []
+        self.is_processing_queue = False
+        self.is_waiting_delay = False
+        
         
         # Iniciar servidor API/WebSocket
         self.server = ChatServer(self.chat_engine, self.handle_remote_message)
@@ -561,7 +566,21 @@ class ChatWindow(tk.Tk):
                     except:
                         pass
                 
-                self.add_message(msg["content"], is_user=(msg["role"] == "user"), timestamp=ts)
+                if msg["role"] == "user":
+                    # Mensajes del usuario: una sola burbuja
+                    self.add_message(msg["content"], is_user=True, timestamp=ts)
+                else:
+                    # Mensajes de la IA: dividir por oraciones (puntos seguidos de espacio o salto de línea)
+                    content = msg["content"]
+                    # Reemplazar ". " por ".\n" para dividir por oraciones
+                    content = content.replace(". ", ".\n")
+                    # Dividir por saltos de línea
+                    sentences = content.split("\n")
+                    
+                    for sentence in sentences:
+                        sentence = sentence.strip()
+                        if sentence:  # Solo añadir si no está vacío
+                            self.add_message(sentence, is_user=False, timestamp=ts)
             
             self.status_bar.set_status("Conversación recuperada")
         else:
@@ -1507,7 +1526,19 @@ class ChatWindow(tk.Tk):
             self.after(0, lambda: self.show_error(error_msg))
     
     def create_streaming_bubble(self):
-        """Crea la burbuja de streaming"""
+        """Cola la creación de una burbuja de streaming"""
+        # Mostrar indicador de escritura antes del primer mensaje
+        if not self.streaming_bubble:
+            self._show_typing_delay_indicator()
+        
+        self.action_queue.append(('create', None))
+        self.after(0, self.process_action_queue)
+
+    def _create_streaming_bubble_impl(self):
+        """Implementación real de creación de burbuja"""
+        # Ocultar indicador de escritura cuando empieza a aparecer el texto
+        self._hide_typing_delay_indicator()
+        
         self.streaming_bubble = StreamingBubble(
             self.messages_frame,
             has_context=self.has_context_flag
@@ -1517,47 +1548,188 @@ class ChatWindow(tk.Tk):
         self.chat_canvas.yview_moveto(1.0)
     
     def append_streaming_token(self, token):
-        """Añade un token a la burbuja de streaming, dividiendo por saltos de línea sin crear vacíos"""
+        """Cola un token para la burbuja"""
+        self.action_queue.append(('token', token))
+        self.after(0, self.process_action_queue)
+
+    def _append_streaming_token_impl(self, token):
+        """Implementación real de añadir token"""
         if not self.streaming_bubble:
-            self.create_streaming_bubble()
-            
-        # Detección de fin de frase para separar burbujas (Visualmente)
-        # 1. Caso fronterizo: La burbuja actual termina en punto y el nuevo token empieza con espacio
-        current_text = self.streaming_bubble.full_text
-        if current_text and current_text.endswith(".") and token.startswith(" "):
-            token = "\n" + token[1:]
-            
-        # 2. Caso interno: El token contiene ". " (punto y espacio)
-        # Reemplazamos por ".\n" para usar la lógica de separación existente
-        token = token.replace(". ", ".\n")
-            
-        if "\n" in token:
-            parts = token.split("\n")
-            
-            # El primero va a la burbuja actual
-            if parts[0]:
-                self.streaming_bubble.append_token(parts[0])
-            
-            # Para cada parte después de un salto de línea
-            for i in range(1, len(parts)):
-                # Solo cerrar la anterior si tiene contenido real (no solo espacios)
-                current_text = self.streaming_bubble.full_text.strip()
-                if current_text:
-                    self.streaming_bubble.finish()
-                    # Crear una nueva para el contenido siguiente
-                    self.create_streaming_bubble()
-                
-                # Añadir contenido si lo hay
-                if parts[i] and parts[i].strip():
-                    self.streaming_bubble.append_token(parts[i])
-        else:
-            self.streaming_bubble.append_token(token)
-            
+            self._create_streaming_bubble_impl()
+        
+        self.streaming_bubble.append_token(token)
         self.messages_frame.update_idletasks()
         self.chat_canvas.yview_moveto(1.0)
+
+    def process_action_queue(self):
+        """Procesa la cola de acciones de streaming"""
+        if self.is_processing_queue or self.is_waiting_delay:
+            return
+
+        if not self.action_queue:
+            return
+
+        self.is_processing_queue = True
+
+        try:
+            while self.action_queue and not self.is_waiting_delay:
+                action_type, payload = self.action_queue.pop(0)
+
+                if action_type == 'create':
+                    self._create_streaming_bubble_impl()
+
+                elif action_type == 'finish':
+                    self._finish_streaming_impl()
+
+                elif action_type == 'token':
+                    token = payload
+                    
+                    # Logica de split
+                    if not self.streaming_bubble:
+                        self._create_streaming_bubble_impl()
+                    
+                    # Detección de fin de frase
+                    current_text = self.streaming_bubble.full_text
+                    if current_text and current_text.endswith(".") and token.startswith(" "):
+                        token = "\n" + token[1:]
+                    
+                    token = token.replace(". ", ".\n")
+
+                    if "\n" in token:
+                        parts = token.split("\n", 1) # Split solo en la primera ocurrencia
+                        
+                        # Parte 1: va a la burbuja actual
+                        if parts[0]:
+                            self._append_streaming_token_impl(parts[0])
+                        
+                        # Si hay split, finalizamos burbuja actual e iniciamos delay
+                        
+                        # Preparamos el resto para después del delay
+                        if len(parts) > 1 and parts[1]:
+                             # Ponemos el resto del token primero
+                             self.action_queue.insert(0, ('token', parts[1]))
+                        
+                        # Y antes de eso, la creación de la nueva burbuja
+                        self.action_queue.insert(0, ('create', None))
+                        
+                        # Finalizamos la actual (ahora que la cola ya tiene lo siguiente, no habilitará el input)
+                        self._finish_streaming_impl()
+                        
+                        # Calcular delay basado en el tamaño del próximo mensaje
+                        self.is_waiting_delay = True
+                        
+                        # Estimar el tamaño del próximo mensaje (tokens pendientes en la cola)
+                        pending_text = ""
+                        for action_type, payload in self.action_queue:
+                            if action_type == 'token' and payload:
+                                pending_text += payload
+                                # Solo tomamos hasta el próximo salto de línea para este bloque
+                                if "\n" in pending_text:
+                                    pending_text = pending_text.split("\n")[0]
+                                    break
+                        
+                        # Calcular delay: 4s para mensajes cortos (≤30 chars), 8s para largos (≥150 chars)
+                        msg_len = len(pending_text.strip())
+                        min_len, max_len = 30, 150
+                        min_delay, max_delay = 4000, 8000
+                        
+                        if msg_len <= min_len:
+                            delay_ms = min_delay
+                        elif msg_len >= max_len:
+                            delay_ms = max_delay
+                        else:
+                            # Interpolación lineal
+                            ratio = (msg_len - min_len) / (max_len - min_len)
+                            delay_ms = int(min_delay + ratio * (max_delay - min_delay))
+                        
+                        # Mostrar indicador de escritura durante el delay
+                        self._show_typing_delay_indicator()
+                        
+                        self.after(delay_ms, self.resume_processing)
+                        break 
+                        
+                    else:
+                        self._append_streaming_token_impl(token)
+
+        except Exception as e:
+            print(f"Error processing queue: {e}")
+            self.show_error(str(e))
+        finally:
+            self.is_processing_queue = False
+
+    def resume_processing(self):
+        """Reanuda el procesamiento después del delay"""
+        # Ocultar indicador de escritura
+        self._hide_typing_delay_indicator()
+        
+        self.is_waiting_delay = False
+        self.process_action_queue()
     
+    def _show_typing_delay_indicator(self):
+        """Muestra el indicador de 'Escribiendo...' con parpadeo aleatorio"""
+        if hasattr(self, 'typing_delay_label') and self.typing_delay_label:
+            return  # Ya existe
+        
+        # Inicializar estado de animación
+        self.typing_indicator_visible = True
+        self.typing_indicator_animating = True
+        
+        self.typing_delay_label = tk.Label(
+            self.messages_frame,
+            text="Escribiendo...",
+            bg=ModernStyle.BG_PRIMARY,
+            fg=ModernStyle.SUCCESS,  # Verde
+            font=(ModernStyle.FONT_FAMILY, ModernStyle.FONT_SIZE_NORMAL, "italic")
+        )
+        self.typing_delay_label.pack(anchor=tk.W, padx=25, pady=(5, 0))
+        
+        # Scroll al indicador
+        self.after(10, lambda: self.chat_canvas.yview_moveto(1.0))
+        
+        # Iniciar animación de parpadeo
+        self._animate_typing_indicator()
+    
+    def _animate_typing_indicator(self):
+        """Anima el indicador de escritura con parpadeo aleatorio"""
+        if not hasattr(self, 'typing_indicator_animating') or not self.typing_indicator_animating:
+            return
+        
+        if not hasattr(self, 'typing_delay_label') or not self.typing_delay_label:
+            return
+        
+        try:
+            if self.typing_indicator_visible:
+                # Ocultar brevemente para simular pausa al escribir
+                self.typing_delay_label.configure(fg=ModernStyle.BG_PRIMARY)  # Mismo color que fondo = invisible
+                self.typing_indicator_visible = False
+                next_interval = random.randint(200, 500)  # 0.2-0.5 segundos oculto (pausa breve)
+            else:
+                # Mostrar durante más tiempo (escribiendo)
+                self.typing_delay_label.configure(fg=ModernStyle.SUCCESS)  # Verde visible
+                self.typing_indicator_visible = True
+                next_interval = random.randint(2000, 4000)  # 2-4 segundos visible
+            
+            self.after(next_interval, self._animate_typing_indicator)
+        except tk.TclError:
+            # Widget destruido, detener animación
+            self.typing_indicator_animating = False
+    
+    def _hide_typing_delay_indicator(self):
+        """Oculta el indicador de 'Escribiendo...'"""
+        # Detener animación
+        self.typing_indicator_animating = False
+        
+        if hasattr(self, 'typing_delay_label') and self.typing_delay_label:
+            self.typing_delay_label.destroy()
+            self.typing_delay_label = None
+
     def finish_streaming(self):
-        """Finaliza el streaming y limpia burbujas vacías"""
+        """Cola la finalización del streaming"""
+        self.action_queue.append(('finish', None))
+        self.after(0, self.process_action_queue)
+
+    def _finish_streaming_impl(self):
+        """Implementación real de finalizar streaming"""
         if self.streaming_bubble:
             # Si la burbuja está vacía o solo tiene espacios, eliminarla
             if not self.streaming_bubble.full_text.strip():
@@ -1566,19 +1738,21 @@ class ChatWindow(tk.Tk):
             else:
                 timestamp = datetime.now().strftime("%H:%M")
                 self.streaming_bubble.finish(timestamp)
+                self.streaming_bubble = None # Importante resetear para que la siguiente cree una nueva
         
-        # Habilitar input
-        self.input_text.configure(state=tk.NORMAL)
-        self.send_button.configure(state=tk.NORMAL)
-        
-        # Actualizar estadísticas
-        stats = self.chat_engine.get_stats()
-        self.status_bar.set_stats(
-            f"Msgs: {stats['message_count']} | "
-            f"Docs: {stats['rag']['documents']} | "
-            f"Memoria: {stats['memory']['total_size_mb']:.2f}MB"
-        )
-        self.status_bar.set_status("Listo")
+        # Habilitar input SOLO si la cola está vacía (realmente hemos terminado todo)
+        if not self.action_queue and not self.is_waiting_delay:
+            self.input_text.configure(state=tk.NORMAL)
+            self.send_button.configure(state=tk.NORMAL)
+            
+            # Actualizar estadísticas
+            stats = self.chat_engine.get_stats()
+            self.status_bar.set_stats(
+                f"Msgs: {stats['message_count']} | "
+                f"Docs: {stats['rag']['documents']} | "
+                f"Memoria: {stats['memory']['total_size_mb']:.2f}MB"
+            )
+            self.status_bar.set_status("Listo")
     
     def process_message(self, message):
         """Procesa el mensaje (versión no-streaming, backup)"""
@@ -1610,6 +1784,11 @@ class ChatWindow(tk.Tk):
     
     def show_error(self, error):
         """Muestra un error"""
+        # Limpiar cola para evitar estados bloqueados
+        self.action_queue = []
+        self.is_processing_queue = False
+        self.is_waiting_delay = False
+        
         # Quitar indicador de escritura
         if hasattr(self, 'typing_indicator'):
             self.typing_indicator.stop_animation()
